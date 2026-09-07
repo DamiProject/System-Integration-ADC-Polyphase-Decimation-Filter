@@ -31,7 +31,7 @@ While the broader goal is processing a high-speed analog signal, this project si
 ---
 ### Future Work
 
-- Exploring more non-idealities that affects SNR, ENOB, DSP algorithms and techniques such as coloured noise impact.
+- Exploring more non-idealities that affect SNR, ENOB, DSP algorithms and techniques such as coloured noise impact.
 - Exploring software and hardware oriented optimization.
 - Exploring demodulation, equalization, and adaptive filtering techniques.
 
@@ -85,7 +85,7 @@ The signal chain is driven by a deliberately noise-dominated composite received 
 
 To verify that the output of the signal generator produced the required low SNR signal specified in Table 1, the following DSP techniques were explored:
 
-**1. Normalized Autocorrelation and Welch-Power Spectral Density (PSD):** Normalized autocorrelation was used to examine periodic structure within the noisy received signal, while Welch PSD was used to identify dominant spectral components and estimate how signal power is distributed across frequency. Figures 2 and 3 show the normalized autocorrelation response, Welch PSD, and the corresponding component power measurements.
+**1. Normalized Autocorrelation and Welch-Power Spectral Density (PSD):** Normalized autocorrelation was used to examine periodic structure within the noisy received signal, while Welch PSD was used to identify dominant spectral components and estimate how signal power is distributed across frequency. Figures 2 show the normalized autocorrelation response,with the corresponding component power measurements shown after cross correlation.
 
 <img width="2248" height="1071" alt="Signal Generator - Autocorrelation Analysis" src="https://github.com/user-attachments/assets/699e3b66-26ff-4563-a4ea-39b86ff9768a" />
 
@@ -99,7 +99,7 @@ As shown in Figure 2, the normalized autocorrelation sequence reaches unity at z
 
 Through the autocorrelation sequence and Welch-PSD processing of the generated signal; the frequency components and their power were detected and closely match their ground truth equivalents. However, clear evidence of both Data Signal 1 and Data Signal 2 has not been achieved, although the PSD spectrum does show a dominant mainlobe near the desired signal band. Therefore, cross-correlation will be utilized next to isolate and detect the presence of both specific data signals.
 
-**2. Normalized Cross-Correlation and Cross-Correlation Power Spectral Density:** Utilizing the properties of cross-correlation, detection of data 1 and data 2 was achieved by extracting them from the noise floor as seen in Figure 4.
+**2. Normalized Cross-Correlation and Cross-Correlation Power Spectral Density:** Utilizing the properties of cross-correlation, detection of data 1 and data 2 was achieved by extracting them from the noise floor as seen in Figure 3.
 
 <img width="2260" height="1074" alt="Signal Generator - Cross-Correlation Detection" src="https://github.com/user-attachments/assets/a5290ecc-357e-4492-8928-8ad4b03cf850" />
 
