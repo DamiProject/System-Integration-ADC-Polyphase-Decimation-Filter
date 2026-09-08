@@ -4,7 +4,7 @@
 
 ## Overview
 
-While the broader goal is processing a high-speed analog signal, this project simulates the environment in MATLAB, therefore, DSP techniques will be applied to its discrete signal to produce a target-rate digital signal output. To implement this, the system architecture will follow the pipeline shown in Figure 1. Additionally, for each module in the architecture, strict system specification criteria will be followed. Design and trade-off choices will be examined using numerical and spectral analyzers, and the results will be benchmarked.
+While the broader goal is processing a high-speed analog signal, this project simulates the environment in MATLAB; therefore, DSP techniques will be applied to its discrete signal to produce a target-rate digital signal output. To implement this, the system architecture will follow the pipeline shown in Figure 1. Additionally, for each module in the architecture, strict system specification criteria will be followed. Design and trade-off choices will be examined using numerical and spectral analyzers, and the results will be benchmarked.
 
 ---
 ### System Architecture Modules
@@ -81,11 +81,11 @@ The signal chain is driven by a deliberately noise-dominated composite received 
 
 **Table 1: Ground specifications against which the signal generator will be benchmarked.**
 
-### Signal Generator Simulation
+### Signal Generation Simulation
 
 To verify that the output of the signal generator produced the required low SNR signal specified in Table 1, the following DSP techniques were explored:
 
-**1. Normalized Autocorrelation and Welch-Power Spectral Density (PSD):** Normalized autocorrelation was used to examine periodic structure within the noisy received signal, while Welch PSD was used to identify dominant spectral components and estimate how signal power is distributed across frequency. Figures 2 show the normalized autocorrelation response,with the corresponding component power measurements shown after cross correlation.
+**1. Normalized Autocorrelation and Welch-Power Spectral Density (PSD):** Normalized autocorrelation was used to examine periodic structure within the noisy received signal, while Welch PSD was used to identify dominant spectral components and estimate how signal power is distributed across frequency. Figures 2 shows the normalized autocorrelation response with the corresponding component power measurements shown after cross correlation.
 
 <img width="2248" height="1071" alt="Signal Generator - Autocorrelation Analysis" src="https://github.com/user-attachments/assets/699e3b66-26ff-4563-a4ea-39b86ff9768a" />
 
@@ -95,11 +95,11 @@ To verify that the output of the signal generator produced the required low SNR 
 
 As shown in Figure 2, the normalized autocorrelation sequence reaches unity at zero lag, as expected for a signal correlated with itself, while its near-zero values away from zero lag demonstrate the AWGN-dominated character of the received signal. Meanwhile, the PSD reveals the deterministic frequency components within the composite signal, corresponding to the DC offset, Data Signal 1, and the high-interference signal, although Data Signal 2 is not independently resolved. The approximately flat broadband PSD also confirms the presence of white noise.
 
-### Result
+#### Result
 
-Through the autocorrelation sequence and Welch-PSD processing of the generated signal; the frequency components and their power were detected and closely match their ground truth equivalents. However, clear evidence of both Data Signal 1 and Data Signal 2 has not been achieved, although the PSD spectrum does show a dominant mainlobe near the desired signal band. Therefore, cross-correlation will be utilized next to isolate and detect the presence of both specific data signals.
+Through the autocorrelation sequence and Welch-PSD processing of the generated signal, the frequency components and their power were detected and closely match their ground truth equivalents. However, clear evidence of both Data Signal 1 and Data Signal 2 has not been achieved, although the PSD spectrum does show a dominant mainlobe near the desired signal band. Therefore, cross-correlation will be utilized next to isolate and detect the presence of both specific data signals.
 
-**2. Normalized Cross-Correlation and Cross-Correlation Power Spectral Density:** Utilizing the properties of cross-correlation, detection of data 1 and data 2 was achieved by extracting them from the noise floor as seen in Figure 3.
+**2. Normalized Cross-Correlation and Cross-Correlation Power Spectral Density:** Utilizing the properties of cross-correlation, detection of Data 1 and Data 2 was achieved by extracting them from the noise floor as seen in Figure 3.
 
 <img width="2260" height="1074" alt="Signal Generator - Cross-Correlation Detection" src="https://github.com/user-attachments/assets/a5290ecc-357e-4492-8928-8ad4b03cf850" />
 
@@ -109,7 +109,7 @@ Through the autocorrelation sequence and Welch-PSD processing of the generated s
 
 **Figure 4: Welch-PSD-based component power, RMS amplitude, and equivalent peak-amplitude estimates for Data Signal 1, Data Signal 2, and high-interference signal.** 
 
-**3. Short Time Fourier Transform (STFT):** Utilizing STFT to view how each frequency component of the signal changed over time the stationary behaviour of DC, Data Signal 2, and the high-interference signal was detected, while the non-stationary behaviour of Data Signal 1 was evident through the intensity of the colours and changes in the colour per time as seen in Figure 5.
+**3. Short Time Fourier Transform (STFT):** Utilizing STFT to view how each frequency component of the signal changed over time, the stationary behaviour of DC, Data Signal 2, and the high-interference signal was detected, while the non-stationary behaviour of Data Signal 1 was evident through the intensity of the colours and changes in the colour per time as seen in Figure 5.
 
 <img width="2350" height="1074" alt="Signal Generator - Hamming STFT" src="https://github.com/user-attachments/assets/e4be1c82-345c-40dc-87ca-5fb603a05b27" />
 
@@ -121,7 +121,7 @@ Through the autocorrelation sequence and Welch-PSD processing of the generated s
 
 **Figure 6: Frequency components wrapped and unwrapped phase angle.**
 
-### Benchmark
+#### Benchmark
 
 The signal generator satisfies its intended role as an AWGN-dominated received signal source. PSD analysis identifies the dominant spectral structure but does not independently resolve both closely spaced data signals under the configured low-SNR condition. Known-reference cross-correlation subsequently confirms both desired signals, while STFT analysis verifies their stationary and nonstationary time behaviour. Phase-spectrum analysis further characterizes the deterministic components within the random phase background produced by AWGN.
 
@@ -132,6 +132,85 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 <img width="587" height="510" alt="image" src="https://github.com/user-attachments/assets/96152618-e782-4006-8769-fce428608c50" />
 
 **Figure 7: Measurement summary of the signal generator module.**
+
+<table>
+  <tr>
+    <td valign="top">
+      
+### Proposed HPF System Specifications
+
+| Requirement | Proposed Value |
+|---|---:|
+| Input sampling rate | 40 GS/s |
+| Frame length | 8,192 samples |
+| Desired tones to preserve | 1.000 GHz and 1.001 GHz |
+| Stopband edge | 50 MHz |
+| Minimum stopband attenuation| ≥ 40 dB |
+| Passband edge | 500 MHz |
+| Maximum passband loss| ≤ 0.10 dB |
+| Desired-tone attenuation | ≤ 0.01 dB at each data tone |
+| DC rejection | ≥ 40 dB after settling |
+| Equivalent residual from the 12 V DC component | ≤ 0.12 V |
+| DC-step settling time | ≤ 10 ns to within ±1% |
+| Frame processing | Continuous IIR state across frame boundaries |
+| Stability | Every digital pole strictly inside the unit circle |
+
+</td>
+    <td valign="top">
+
+### Proposed Anti-Aliasing LPF System Specifications
+
+| Requirement | Proposed Value |
+|---|---:|
+| High-rate input sampling frequency | 40 GS/s |
+| Processing frame length | 8,192 samples |
+| Planned sampler downsampling factor | 4 |
+| Resulting ADC sampling frequency | 10 GS/s |
+| ADC Nyquist frequency to protect | 5.0 GHz |
+| Desired tones to preserve | 1.000 GHz and 1.001 GHz |
+| LPF passband edge | 1.25 GHz |
+| Maximum passband loss | ≤ 0.10 dB |
+| LPF stopband edge | 5.0 GHz |
+| Minimum stopband attenuation | ≥ 60 dB |
+| Maximum desired-tone attenuation | ≤ 0.01 dB at each tone |
+| 6.2 GHz interferer attenuation | ≥ 60 dB |
+| Step-response settling time | ≤ 5 ns to within ±1% |
+| Maximum step overshoot | ≤ 20% |
+| Stability | Every pole strictly inside the unit circle |
+| Frame continuity | LPF state must persist across frame boundaries |
+
+</td>
+  </tr>
+</table>
+
+**Table 2: Ground specifications against which the HPF and LPF will be benchmarked.**
+
+### Discrete Filtering (HPF/LPF) Simulation
+
+Starting with **HPF** which attenuates DC offset in the received signal, design choices and tradeoffs will be examined to verify that the proposed system specifications were achieved using the following DSP techniques:
+
+**1. Butterworth IIR Filter Transient and Stability:** The IIR filter stability and transient response were verified using the pole-zero and DC-step responses shown in Figures 8 and 9. All digital poles remain strictly inside the unit circle, while the step response verifies that the DC attenuation transient settles within the specified time.
+
+<img width="90%" alt="DC Attenuation HPF - Pole-Zero Stability" src="https://github.com/user-attachments/assets/5d211614-6c57-4201-ad05-700af8ed6b28" />
+
+ **Figure 8: HPF Pole-Zero plot for stability verification.**
+ 
+<img width="90%" alt="DC Attenuation HPF - Step Settling" src="https://github.com/user-attachments/assets/d32f8aa3-7128-4d4d-893a-ab99b2df53a4" />
+
+  **Figure 9 : HPF Step Response plot for transient and settling time verification.**
+
+**2. HPF Magnitude Response and Received Signal Spectrum:** Figures 10 and 11 verify the HPF frequency-domain behavior. The realized magnitude response satisfies the required low-frequency attenuation while approaching unity gain within the passband. Applying the HPF to the received waveform strongly suppresses the DC and low-frequency region while producing negligible spectral change around the desired 1.000 GHz and 1.001 GHz data tones.
+
+<img width="85%" alt="DC Attenuation HPF - Magnitude Response" src="https://github.com/user-attachments/assets/1b699874-384a-4df2-8da9-df16d05c1f28" />
+
+**Figure 10: Butterworth HPF Magnitude Response.**
+
+<img width="95%" alt="DC Attenuation HPF - Received-Signal Spectrum" src="https://github.com/user-attachments/assets/39f77531-8b4f-4406-8191-878961f97efd" />
+
+**Figure 11: Received-Signal Spectrum Before and After HPF, Showing Low-Frequency Rejection and Desired-Tone Preservation.**  
+
+
+
 
 
 
