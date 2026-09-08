@@ -38,7 +38,7 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 ## Simulation, Results, & Analysis
 
-### Low-SNR Received Signal Test Specification
+### Low-SNR Received Signal
 
 The signal chain is driven by a deliberately noise-dominated composite received waveform. The configured signal provides known ground truth for benchmarking the spectral, time-frequency, correlation, phase, filtering, AGC, ADC, and decimation analyses performed later in the demonstration.
 
@@ -136,7 +136,9 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 <table>
   <tr>
     <td valign="top">
-      
+    
+## Filtering Received Signal Processing 
+
 ### Proposed HPF System Specifications
 
 | Requirement | Proposed Value |
@@ -189,7 +191,7 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 
 Starting with **HPF** which attenuates DC offset in the received signal, design choices and tradeoffs will be examined to verify that the proposed system specifications were achieved using the following DSP techniques:
 
-**1. Butterworth IIR Filter Transient and Stability:** The IIR filter stability and transient response were verified using the pole-zero and DC-step responses shown in Figures 8 and 9. All digital poles remain strictly inside the unit circle, while the step response verifies that the DC attenuation transient settles within the specified time.
+**1. Butterworth IIR Filter Transient and Stability:** The IIR filter stability and transient response were verified using the pole-zero and step response shown in Figures 8 and 9. All digital poles remain strictly inside the unit circle, while the step response verifies that the DC attenuation transient will settle within the specified time.
 
 <img width="90%" alt="DC Attenuation HPF - Pole-Zero Stability" src="https://github.com/user-attachments/assets/5d211614-6c57-4201-ad05-700af8ed6b28" />
 
@@ -197,9 +199,9 @@ Starting with **HPF** which attenuates DC offset in the received signal, design 
  
 <img width="90%" alt="DC Attenuation HPF - Step Settling" src="https://github.com/user-attachments/assets/d32f8aa3-7128-4d4d-893a-ab99b2df53a4" />
 
-  **Figure 9 : HPF Step Response plot for transient and settling time verification.**
+  **Figure 9: HPF Step Response plot for transient and settling time verification.**
 
-**2. HPF Magnitude Response and Received Signal Spectrum:** Figures 10 and 11 verify the HPF frequency-domain behavior. The realized magnitude response satisfies the required low-frequency attenuation while approaching unity gain within the passband. Applying the HPF to the received waveform strongly suppresses the DC and low-frequency region while producing negligible spectral change around the desired 1.000 GHz and 1.001 GHz data tones.
+**2. HPF Magnitude Response and Received Signal Spectrum:** Figures 10 and 11 verify the HPF frequency-domain behavior. The realized magnitude response satisfies the required low-frequency attenuation while approaching unity gain within the passband. Applying the HPF to the received waveform suppresses the DC and low-frequency region while producing negligible spectral change around the desired 1.000 GHz and 1.001 GHz data tones.
 
 <img width="85%" alt="DC Attenuation HPF - Magnitude Response" src="https://github.com/user-attachments/assets/1b699874-384a-4df2-8da9-df16d05c1f28" />
 
@@ -207,10 +209,74 @@ Starting with **HPF** which attenuates DC offset in the received signal, design 
 
 <img width="95%" alt="DC Attenuation HPF - Received-Signal Spectrum" src="https://github.com/user-attachments/assets/39f77531-8b4f-4406-8191-878961f97efd" />
 
-**Figure 11: Received-Signal Spectrum Before and After HPF, Showing Low-Frequency Rejection and Desired-Tone Preservation.**  
+**Figure 11: Received-Signal Spectrum Before and After HPF, Showing Low-Frequency Rejection and Desired Tone Preservation.**  
 
+The **LPF** is an anti-aliasing filter that attenuates the high interference signal and guards against aliasing of the received signal. Design choices and tradeoffs will be examined to verify that the proposed system specifications were achieved using the following DSP techniques:
 
+**1. Butterworth IIR Filter Transient and Stability:** The IIR filter stability and transient response were verified using the pole-zero and step response shown in Figures 12 and 13. All digital poles remain strictly inside the unit circle, while the step response verifies that the high interference attenuation transient will settle within the specified time.
 
+<img width="87%" alt="Anti-Aliasing LPF - Pole-Zero Stability" src="https://github.com/user-attachments/assets/96876e99-a97b-4cf2-b672-5614201d7938" />
 
+**Figure 12: LPF Pole-Zero plot for stability verification.**
 
+<img width="87%" alt="Anti-Aliasing LPF - Step Response" src="https://github.com/user-attachments/assets/e6479e8a-4b1c-49ae-b515-e7f5135cab2f" />
 
+**Figure 13: LPF Step Response plot for transient and settling time verification.**
+
+**2. LPF Magnitude Response and Received Signal Spectrum:** Figures 14 and 15 verify the LPF frequency-domain behavior. The realized magnitude response satisfies the required high-frequency attenuation while approaching unity gain within the passband. Applying the LPF to the received waveform suppresses the high-frequency region while producing negligible spectral change around the desired 1.000 GHz and 1.001 GHz data tones.
+
+<img width="1950" height="978" alt="Anti-Aliasing LPF - Magnitude Response" src="https://github.com/user-attachments/assets/96c09ba8-d621-4422-97b9-f60e76e0fd2a" />
+
+**Figure 14: Butterworth LPF Magnitude Response.**
+
+<img width="2260" height="1074" alt="Anti-Aliasing LPF - Received-Signal Spectrum" src="https://github.com/user-attachments/assets/d7d1d470-aa33-49d4-a8ba-bf96d3e34653" />
+
+**Figure 15: Received-Signal Spectrum Before and After LPF, Showing High-Frequency Rejection and Desired Tone Preservation.** 
+
+**3. LPF Phase Delay and Group Delay Response:** Figures 16 and 17 characterize the phase response of the Butterworth LPF. The phase and group delay vary with frequency, confirming the expected non-linear phase response of the IIR filter. Within the desired signal region, the closely spaced 1.000 GHz and 1.001 GHz tones which are in the same frequency band experience nearly the same delay, indicating minimal relative phase distortion between the two data components.
+
+<img width="90%" alt="Anti-Aliasing LPF - Phase Delay" src="https://github.com/user-attachments/assets/de0411b7-a347-435b-a324-d5831f31d7cb" />
+
+**Figure 16: Phase-Delay Response of the LPF Butterworth IIR Filter.**
+
+<img width="80%" alt="image" src="https://github.com/user-attachments/assets/c54d80eb-9ef9-45e5-a968-7514bacc80ef" />
+
+**Figure 17: Group-Delay Response of the LPF Butterworth IIR Filter.**
+
+#### Benchmark
+
+| DC Attenuation (0 GHz)  | High Interference Attenuation (6.2 GHz)|
+| :---: | :---: |
+| <img width="70%" alt="image" src="https://github.com/user-attachments/assets/234f322a-f5fc-48d3-a819-a55b19e471bd" /> | <img width="70%" alt="image" src="https://github.com/user-attachments/assets/98513712-7c1a-4e2d-b598-39744f51a23e" />|
+
+**Figure 18: Performance Summary of both Butterworth HPF and LPF meeting their respective proposed system specifications.**
+
+| SNR & SINR After DC Attenuation (O GHz) | SNR & SINR After High Interference Attenuation (6.2 GHz)|
+| :---: | :---: |
+| <img width="200%" alt="image" src="https://github.com/user-attachments/assets/53542889-4949-4168-a42b-ec527523f180" /> | <img width="200%" alt="image" src="https://github.com/user-attachments/assets/7bc3977d-fdda-4d7b-8ca0-db24443e0fd0" />|
+
+**Figure 19: Observed SNR & SINR improvement after the discrete filtering stage.**
+
+The HPF and LPF performance summaries in Figure 18 verify that both filters satisfy their proposed system specifications.
+
+| Measurement | Requirement | Measured Result | Status |
+|---|---:|---:|:---:|
+| **HPF stopband attenuation** | ≥ 40 dB | 43.69 dB | PASS |
+| **HPF DC rejection** | ≥ 40 dB | 74.09 dB | PASS |
+| **HPF residual DC** | ≤ 0.12 V | ≈ 0.0024 V | PASS |
+| **HPF settling time** | ≤ 10 ns | 5.60 ns | PASS |
+| **HPF Data 1 loss** | ≤ 0.01 dB | 0.00157 dB | PASS |
+| **HPF Data 2 loss** | ≤ 0.01 dB | 0.00156 dB | PASS |
+| **HPF maximum pole radius** | < 1 | 0.97923 | PASS |
+| **LPF passband loss** | ≤ 0.10 dB | 0.08529 dB | PASS |
+| **LPF stopband attenuation** | ≥ 60 dB | 70.31 dB | PASS |
+| **LPF 6.2 GHz attenuation** | ≥ 60 dB | 85.24 dB | PASS |
+| **LPF Data 1 loss** | ≤ 0.01 dB | 0.00373 dB | PASS |
+| **LPF Data 2 loss** | ≤ 0.01 dB | 0.00378 dB | PASS |
+| **LPF settling time** | ≤ 5 ns | 1.775 ns | PASS |
+| **LPF step overshoot** | ≤ 20% | 15.56% | PASS |
+| **LPF maximum pole radius** | < 1 | 0.94451 | PASS |
+
+**Table 3: Benchmark results showing that the 3<sup>rd</sup>-order Butterworth HPF and 7<sup>th</sup>-order Butterworth LPF meet the proposed system specifications.**
+
+The HPF removes the large DC component while having almost no effect on the desired data tones. Since this stage mainly targets DC and does not attenuates the 6.2 GHz interferer or most of the broadband noise, the measured SNR and SINR improvement is small at about **+0.059 dB**. The LPF produces the major signal-quality improvement. It strongly attenuates the 6.2 GHz interferer and reduces the broadband-noise power by **11.826 dB**, while keeping both desired tones nearly unchanged. This improves SNR by **11.823 dB** and SINR by **11.834 dB** across the LPF stage. Across the complete HPF/LPF filtering chain, SNR improves from **-26.431 dB to -14.548 dB**, while SINR improves from **-26.442 dB to -14.548 dB**. This gives an overall improvement of approximately **11.88 dB SNR** and **11.89 dB SINR**, showing that the filtering stage attenuates the unwanted DC and high-frequency interference while preserving the desired 1.000 GHz and 1.001 GHz data signals.
