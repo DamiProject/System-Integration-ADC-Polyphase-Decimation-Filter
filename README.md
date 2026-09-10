@@ -15,7 +15,7 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 **3. Butterworth Low Pass Filter (LPF):**  Attenuates the high interference signal and guards against aliasing of the received signal.
 
-**4. Automatic Gain Control (AGC) & Noise Gate:** Performs signal conditioning on the filtered signal to protect against the clipping and saturation at the Analog-to-Digital-Converter (ADC). 
+**4. Automatic Gain Control (AGC) and Noise Gate:** Performs signal conditioning on the filtered signal to protect against the clipping and saturation at the Analog-to-Digital-Converter (ADC). 
 
 **5. Analog-to-Digital-Converter (ADC):** Converts the discrete received signal to digital signal.
 
@@ -36,8 +36,9 @@ While the broader goal is processing a high-speed analog signal, this project si
 - Exploring demodulation, equalization, and adaptive filtering techniques.
 
 
-## Simulation, Results, & Analysis
+## Simulation, Results, and Analysis
 
+---
 ### Low-SNR Received Signal
 
 The signal chain is driven by a deliberately noise-dominated composite received waveform. The configured signal provides known ground truth for benchmarking the spectral, time-frequency, correlation, phase, filtering, AGC, ADC, and decimation analyses performed later in the demonstration.
@@ -133,12 +134,13 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 
 **Figure 7: Measurement summary of the signal generator module.**
 
-<table>
-  <tr>
-    <td valign="top">
-    
+---   
 ## Filtering Received Signal Processing 
 
+  <table>
+  <tr>
+    <td valign="top">  
+      
 ### Proposed HPF System Specifications
 
 | Requirement | Proposed Value |
@@ -251,11 +253,11 @@ The **LPF** is an anti-aliasing filter that attenuates the high interference sig
 
 **Figure 18: Performance Summary of both Butterworth HPF and LPF meeting their respective proposed system specifications.**
 
-| SNR & SINR After DC Attenuation (O GHz) | SNR & SINR After High Interference Attenuation (6.2 GHz)|
+| SNR and SINR After DC Attenuation (O GHz) | SNR and SINR After High Interference Attenuation (6.2 GHz)|
 | :---: | :---: |
 | <img width="200%" alt="image" src="https://github.com/user-attachments/assets/53542889-4949-4168-a42b-ec527523f180" /> | <img width="200%" alt="image" src="https://github.com/user-attachments/assets/7bc3977d-fdda-4d7b-8ca0-db24443e0fd0" />|
 
-**Figure 19: Observed SNR & SINR improvement after the discrete filtering stage.**
+**Figure 19: Observed SNR and SINR improvement after the discrete filtering stage.**
 
 The HPF and LPF performance summaries in Figure 18 verify that both filters satisfy their proposed system specifications.
 
@@ -280,3 +282,64 @@ The HPF and LPF performance summaries in Figure 18 verify that both filters sati
 **Table 3: Benchmark results showing that the 3<sup>rd</sup>-order Butterworth HPF and 7<sup>th</sup>-order Butterworth LPF meet the proposed system specifications.**
 
 The HPF removes the large DC component while having almost no effect on the desired data tones. Since this stage mainly targets DC and does not attenuates the 6.2 GHz interferer or most of the broadband noise, the measured SNR and SINR improvement is small at about **+0.059 dB**. The LPF produces the major signal-quality improvement. It strongly attenuates the 6.2 GHz interferer and reduces the broadband-noise power by **11.826 dB**, while keeping both desired tones nearly unchanged. This improves SNR by **11.823 dB** and SINR by **11.834 dB** across the LPF stage. Across the complete HPF/LPF filtering chain, SNR improves from **-26.431 dB to -14.548 dB**, while SINR improves from **-26.442 dB to -14.548 dB**. This gives an overall improvement of approximately **11.88 dB SNR** and **11.89 dB SINR**, showing that the filtering stage attenuates the unwanted DC and high-frequency interference while preserving the desired 1.000 GHz and 1.001 GHz data signals.
+
+---
+
+### Signal Conditioning 
+
+| Requirement | Proposed Value |
+|---|---:|
+| Input sampling rate | 40 GS/s |
+| Frame length | 8,192 samples |
+| Input | LPF Output |
+| ADC full-scale range | 2 V peak-to-peak (−1 V to +1 V) |
+| Projected-envelope target window | 0.30 V to 0.75 V |
+| Supported gain range | 0.001 to 10 (−60 dB to +20 dB) |
+| Maximum gain-attack response | ≤ 20 ns |
+| Maximum gain-release response | ≤ 0.25 µs |
+| Target-window occupancy after acquisition | ≥ 99% |
+| Maximum clipping rate | ≤ 0.01% outside ±1 V |
+| Noise-gate opening time to gain ≥ 0.90 | ≤ 0.10 µs |
+| Noise-gate closing time to gain ≤ 0.10 | ≤ 0.25 µs |
+| Settled noise-gate suppression | ≥ 40 dB |
+| Active-region SNR/SINR degradation | ≤ 0.5 dB |
+| Frame processing | Preserve envelope, AGC gain, and gate gain across frames |
+| Reporting | Before/after SNR, SINR, and their changes |
+
+**Table 4: Proposed system specifications against which the AGC and Noise Gate are benchmarked.**
+
+The **Noise Gate** acts as a control mechanism for the **discrete-time, time-varying AGC**. When the noise gate is open, the AGC is allowed to condition the received signal by increasing or reducing its gain as required. When the noise gate is closed, the AGC-controlled signal is strongly attenuated, reducing the amount of low-level noise passed to the downstream ADC. Design choices and tradeoffs will be examined to verify that the proposed system specifications were achieved using the following time-domain and spectral analysis plots including numerical analysis:
+
+| AGC Gain Response | Noise Gate Gain Response|
+| :---: | :---: |
+| <img width="110%" alt="AGC - Gain Response" src="https://github.com/user-attachments/assets/1c85dfbf-fb32-4338-ad29-3db489e375b2" />|<img width="110%"  alt="AGC - Noise-Gate Response" src="https://github.com/user-attachments/assets/8da3b23c-3741-4804-8a31-3ce31460d18e" />|
+
+**Figure 20: Time-domain dynamic gain tracking for the AGC and Noise Gate.** The AGC gain response shows the time-varying gain adjustment applied to regulate the received-signal envelope, while the noise-gate response shows that the detected envelope remains above the configured threshold and the gate stays open with a gain near unity. Together, the plots verify that the AGC performs the required gain conditioning while the noise gate allows the valid received signal to pass without false closure.
+
+| AGC Envelope Detector Performance | Desired-Signal Preservation Performance|
+| :---: | :---: |
+|<img width="100%" alt="AGC-Envelope Regulation" src="https://github.com/user-attachments/assets/d22d9d10-00ed-4f0b-b1de-b2fcc4e2bb31" />|<img width="100%" alt="Data-Tone Preservation" src="https://github.com/user-attachments/assets/1ddc6a05-d719-45d7-81d4-ac909f26cfde" />|
+
+**Figure 21: AGC Envelope Regulation and Desired-Signal Preservation.** The left plot shows that the AGC envelope detector tracks the high-amplitude received signal while the projected output envelope is regulated predominantly within the specified 0.30 V to 0.75 V target window. The right plot verifies the frequency-domain effect of the AGC using Welch PSD and Hamming-windowed FFT analysis. Although the AGC reduces the overall signal level, the desired 1.000 GHz and 1.001 GHz components remain clearly identifiable at their original frequencies, demonstrating preservation of the desired spectral structure without significant observable distortion around the signal band.
+
+| AGC Input and Output Signal | AGC Compliance with ADC's Full Range|
+| :---: | :---: |
+|<img width="100%" alt="AGC-Received Signal Response" src="https://github.com/user-attachments/assets/30e91207-3016-413a-a36a-fa703c91a528" />|<img width="100%" alt="AGC - ADC Full Scale" src="https://github.com/user-attachments/assets/b2c30d99-24a8-49e1-8bcd-f39d43a27a4c" />| 
+
+**Figure 22: AGC Time-Domain Conditioning and ADC Full-Scale Compliance.** The received-signal response shows the reduction of the high-amplitude LPF output through the time-varying AGC, followed by the final noise-gated output. The corresponding ADC full-scale compliance plot verifies that the conditioned waveform remains predominantly within the ±1 V ADC input range, with only approximately 0.00286% of samples exceeding full scale.
+
+<img width="70%" alt="image" src="https://github.com/user-attachments/assets/07201591-9b5b-4745-8a1e-84f5004d4e74" />
+
+**Figure 23: Numerical performance summary of the AGC and Noise Gate for the exercised received-signal specifications.**
+
+<img width="70%" alt="image" src="https://github.com/user-attachments/assets/112e8bc6-51e2-47f3-b838-847239138160" />
+
+**Figure 24: Observed SNR and SINR preservation after signal conditioning.**
+
+### Benchmark
+
+The AGC operated across a wide 0.001 to 10 gain range (−60 dB to +20 dB) and was initialized at its minimum gain to safely accommodate the exceptionally large post-LPF input before recovering toward its operating level. The configured 4 ns attack and 22.4 ns release time constants provide asymmetric gain control: rapid gain reduction for large excursions and slower recovery to reduce unnecessary gain pumping in the noisy received waveform. The measured release response was approximately 25.68 ns, well within the specified 250 ns maximum response time.
+
+The noise gate remained open/pass throughout the received record because the detected envelope stayed above the configured 10 V threshold, allowing the time-varying AGC to condition the valid signal without gate-induced interruption. The signal-quality measurements further showed only approximately 0.0304 dB degradation in both SNR and SINR, significantly below the permitted 0.5 dB, confirming that the conditioning stage primarily performs amplitude regulation without materially degrading the desired signal-to-noise relationship.
+
+The noise-gate opening, closing, and settled-suppression requirements remain part of the proposed design specification but were not exercised by this continuously active received record and are therefore not reported as measured results in this benchmark.
