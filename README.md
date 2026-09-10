@@ -316,7 +316,7 @@ The **Noise Gate** acts as a control mechanism for the **discrete-time, time-var
 
 **Figure 20: Time-domain dynamic gain tracking for the AGC and Noise Gate.** The AGC gain response shows the time-varying gain adjustment applied to regulate the received-signal envelope, while the noise-gate response shows that the detected envelope remains above the configured threshold and the gate stays open with a gain near unity. Together, the plots verify that the AGC performs the required gain conditioning while the noise gate allows the valid received signal to pass without false closure.
 
-| AGC Envelope Detector Performance | Desired-Signal Preservation Performance|
+| AGC Envelope Detector | Desired-Signal Preservation|
 | :---: | :---: |
 |<img width="100%" alt="AGC-Envelope Regulation" src="https://github.com/user-attachments/assets/d22d9d10-00ed-4f0b-b1de-b2fcc4e2bb31" />|<img width="100%" alt="Data-Tone Preservation" src="https://github.com/user-attachments/assets/1ddc6a05-d719-45d7-81d4-ac909f26cfde" />|
 
@@ -343,3 +343,80 @@ The AGC operated across a wide 0.001 to 10 gain range (−60 dB to +20 dB) and w
 The noise gate remained open/pass throughout the received record because the detected envelope stayed above the configured 10 V threshold, allowing the time-varying AGC to condition the valid signal without gate-induced interruption. The signal-quality measurements further showed only approximately 0.0304 dB degradation in both SNR and SINR, significantly below the permitted 0.5 dB, confirming that the conditioning stage primarily performs amplitude regulation without materially degrading the desired signal-to-noise relationship.
 
 The noise-gate opening, closing, and settled-suppression requirements remain part of the proposed design specification but were not exercised by this continuously active received record and are therefore not reported as measured results in this benchmark.
+
+## ADC (Sampling and Quantization)
+
+
+  <table>
+  <tr>
+    <td valign="top">
+      
+### Proposed Sampler System Specifications
+
+Here, the 40 GS/s signal is the high-rate simulation reference. The sampler represents the physical ADC operating at 10 GS/s.
+
+| Requirement | Proposed Value |
+|---|---:|
+| Input sampling rate | 40 GS/s |
+| Downsampling factor | 4 |
+| ADC output sampling rate | 10 GS/s |
+| ADC Nyquist frequency | 5 GHz |
+| Input frame length | 8,192 samples |
+| Output samples per frame | 2,048 samples |
+| Total input samples | 524,288 |
+| Total sampled output | 131,072 samples |
+| Sampling phase | Global indices `0, 4, 8, ...` |
+| FFT frequency resolution | 76.294 kHz |
+| Desired-tone frequency error | ≤ 1 FFT bin |
+| Desired-tone level change | ≤ 0.25 dB |
+| Maximum SNR degradation | ≤ 0.5 dB |
+| Maximum SINR degradation | ≤ 0.5 dB |
+| Frame-boundary behavior | Continuous global sampling phase |
+| Sampling-clock model | Ideal; aperture jitter excluded |
+
+</td>
+    <td valign="top">
+      
+### Proposed Bipolar Midtread Quantizer System Specifications
+
+| Requirement | Proposed Value |
+|---|---:|
+| Input | Actual sampler output |
+| Input rate | 10 GS/s |
+| Input samples | 131,072 |
+| Quantizer type | Uniform bipolar midtread |
+| Resolution | 8 bits |
+| Available codes | 256 (`0–255`) |
+| Full-scale range | 2 Vpp (`−1 V` to `+1 V`) |
+| Quantization step, Δ | 7.8125 mV |
+| Zero representation | Exactly `0 V`, code `128` |
+| Reconstructed range | `−1 V` to `+0.9921875 V` |
+| Non-saturated error bound | ≤ Δ/2 = 3.90625 mV |
+| Ideal quantization-noise power | Δ²/12 = 5.086 × 10⁻⁶ V² |
+| Ideal quantization-error RMS | Δ/√12 = 2.255 mV |
+| Minimum measured quantization-only SQNR | ≥ 38 dB |
+| Maximum overloaded samples | ≤ 0.01% |
+| Data-tone frequency error | ≤ 1 true-resolution bin = 76.294 kHz |
+| Data-tone level change | ≤ 0.05 dB |
+| Maximum SNR degradation | ≤ 0.10 dB |
+| Maximum SINR degradation | ≤ 0.10 dB |
+| Output rate/sample count | Unchanged from sampler |
+</td>
+  </tr>
+</table>
+
+**Table 5: Proposed system specifications against which the ADC sampler and quantizer will be benchmarked.**
+
+### Sampling
+
+The downsampler reduces the high-rate 40 GS/s simulation reference to the target ADC sampling rate of 10 GS/s using a downsampling factor of 4. The implementation retains one sample from every four input samples while maintaining a continuous global sampling phase across frame boundaries. At this stage, an ideal sampling clock is assumed, therefore aperture jitter is excluded from the model.
+
+The main design objective is to verify that the sampling-rate reduction preserves the desired 1.000 GHz and 1.001 GHz signal components without introducing significant amplitude, frequency, SNR, or SINR degradation. Since the resulting ADC sampling rate is 10 GS/s, the new Nyquist frequency is 5 GHz. Consequently, the preceding anti-aliasing LPF is required to sufficiently suppress spectral content above 5 GHz before sampling.
+
+| Time-domain plot| Desired-Signal Preservation|
+| :---: | :---: |
+|<img width="100%" alt="Sampler - Time-Domain Sampling" src="https://github.com/user-attachments/assets/c28bd52e-4d86-4b91-bbd6-42ed2fb17391" />|<img width="100%" alt="Sampler - Spectral Preservation and Aliasing" src="https://github.com/user-attachments/assets/431eaa6d-8699-4baa-99d8-f7bb3172a2a6" />|
+
+**Figure 25: Time-domain ADC sampling operation and frequency-domain verification of desired-signal preservation and alias suppression.**
+
+
