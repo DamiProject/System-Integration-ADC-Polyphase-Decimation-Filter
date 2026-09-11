@@ -7,7 +7,7 @@ classdef TestFloatingDSPDecimator < matlab.unittest.TestCase
         function testQuantizedADCToFloatingDecimatorIntegration(testCase)
             %% Validates Full Frame Chain Through Floating Polyphase FIR
 
-            Config = EndToEndConfig();
+            Config = EndToEndTestConfig();
             ADCParams = Config.ADCParams;
             DSPParams = Config.DSPParams;
 
