@@ -7,7 +7,7 @@ classdef TestADCFixedDSPDecimator < matlab.unittest.TestCase
         function testADCEncoderFloatingAndFixedFrameIntegration(testCase)
             %% ADC midtread -> encoder -> floating/fixed decimator comparison
 
-            Config = EndToEndConfig();
+            Config = EndToEndTestConfig();
             ADCParams = Config.ADCParams;
             DSPParams = Config.DSPParams;
 
