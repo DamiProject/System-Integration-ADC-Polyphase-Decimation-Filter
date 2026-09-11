@@ -9,9 +9,19 @@ function SetupPaths()
 
     IntegrationRoot = fileparts(mfilename("fullpath"));
 
-    % Make the integration-owned files (for example EndToEndConfig.m)
+    % Make the integration-owned files (for example EndToEndTestConfig.m)
     % available regardless of the caller's current working directory.
     addpath(IntegrationRoot);
+
+    %% ==========================================
+    %% DEMONSTRATION STAGES
+    %% ==========================================
+
+    DemoStages = fullfile(IntegrationRoot, "Demo Stages");
+
+    if isfolder(DemoStages)
+        addpath(DemoStages);
+    end
 
     %% ==========================================
     %% DSP DOWNSTREAM ROOT
@@ -105,6 +115,26 @@ function SetupPaths()
 
     addpath(genpath(ADCDesign));
     addpath(genpath(PolyphaseDesign));
+
+    %% ==========================================
+    %% ADD SYSTEM ANALYSIS PATHS
+    %% ==========================================
+
+    AnalysisFolders = [ ...
+        "ADC Analysis", ...
+        "AGC Analysis", ...
+        "Decimator Analysis", ...
+        "Filter Analysis", ...
+        "Spectrum Analysis"];
+
+    for k = 1:numel(AnalysisFolders)
+        AnalysisPath = fullfile( ...
+            IntegrationRoot, AnalysisFolders(k));
+
+        if isfolder(AnalysisPath)
+            addpath(AnalysisPath);
+        end
+    end
 
     %% ==========================================
     %% OPTIONAL INTEGRATION DESIGN FOLDER
