@@ -17,13 +17,22 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 **4. Automatic Gain Control (AGC) and Noise Gate:** Performs signal conditioning on the filtered signal to protect against the clipping and saturation at the Analog-to-Digital-Converter (ADC). 
 
-**5. Analog-to-Digital-Converter (ADC):** Converts the discrete received signal to digital signal.
+**5. Analog-to-Digital-Converter (ADC) and Encoder:** Converts the discrete received signal to digital signal and produces fixed-point represented digital signal.
 
 **6. Polyphase FIR Decimation Filter:** Processes the digital signal to achieve the intended target-rate digital output.
 
 <img width="1000" height="700" alt="image" src="https://github.com/user-attachments/assets/42c814f7-81ac-411c-afec-6ec54ebcbcb7" />
 
 **Figure 1: Complete signal processing pipeline from discrete simulation to decimated digital signal output.**
+
+#### Benchmark
+
+1. All implemented stages met their defined functional and performance requirements through stage-by-stage numerical and spectral verification.
+2. The signal generator successfully produced the required stationary and non-stationary low-SNR received signals.
+3. The non-stationary Gaussian-pulsed tones produced apparent IM2/IM3 spectral artifacts, caused by time-domain pulse multiplication and the resulting frequency-domain spectral broadening.
+4. The HPF and LPF attenuated the measured IM2-associated spectral components, while the downstream AGC, Sampler, Quantizer, and Encoder introduced no material additional IM3 distortion.
+5. The low SNR and closely spaced desired tones demonstrated the difficulty of achieving reliable frequency-component resolvability.
+6. The mixed-signal chain successfully produced a signed fixed-point digital representation for downstream polyphase FIR decimation.
 
 ---
 ### How To Run
@@ -82,7 +91,7 @@ The signal chain is driven by a deliberately noise-dominated composite received 
 
 **Table 1: Ground specifications against which the signal generator will be benchmarked.**
 
-### Signal Generation Simulation
+#### Signal Generation Simulation
 
 To verify that the output of the signal generator produced the required low SNR signal specified in Table 1, the following DSP techniques were explored:
 
@@ -92,11 +101,11 @@ To verify that the output of the signal generator produced the required low SNR 
 
 **Figure 2: Normalized autocorrelation sequence and Welch PSD of the received signal observation record.**
 
-#### Analysis
+##### Analysis
 
 As shown in Figure 2, the normalized autocorrelation sequence reaches unity at zero lag, as expected for a signal correlated with itself, while its near-zero values away from zero lag demonstrate the AWGN-dominated character of the received signal. Meanwhile, the PSD reveals the deterministic frequency components within the composite signal, corresponding to the DC offset, Data Signal 1, and the high-interference signal, although Data Signal 2 is not independently resolved. The approximately flat broadband PSD also confirms the presence of white noise.
 
-#### Result
+##### Result
 
 Through the autocorrelation sequence and Welch-PSD processing of the generated signal, the frequency components and their power were detected and closely match their ground truth equivalents. However, clear evidence of both Data Signal 1 and Data Signal 2 has not been achieved, although the PSD spectrum does show a dominant mainlobe near the desired signal band. Therefore, cross-correlation will be utilized next to isolate and detect the presence of both specific data signals.
 
@@ -122,7 +131,7 @@ Through the autocorrelation sequence and Welch-PSD processing of the generated s
 
 **Figure 6: Frequency components wrapped and unwrapped phase angle.**
 
-#### Benchmark
+##### Benchmark
 
 The signal generator satisfies its intended role as an AWGN-dominated received signal source. PSD analysis identifies the dominant spectral structure but does not independently resolve both closely spaced data signals under the configured low-SNR condition. Known-reference cross-correlation subsequently confirms both desired signals, while STFT analysis verifies their stationary and nonstationary time behaviour. Phase-spectrum analysis further characterizes the deterministic components within the random phase background produced by AWGN.
 
@@ -135,13 +144,13 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 **Figure 7: Measurement summary of the signal generator module.**
 
 ---   
-## Filtering Received Signal Processing 
+#### Filtering Received Signal Processing 
 
   <table>
   <tr>
     <td valign="top">  
       
-### Proposed HPF System Specifications
+##### Proposed HPF System Specifications
 
 | Requirement | Proposed Value |
 |---|---:|
@@ -162,7 +171,7 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 </td>
     <td valign="top">
 
-### Proposed Anti-Aliasing LPF System Specifications
+##### Proposed Anti-Aliasing LPF System Specifications
 
 | Requirement | Proposed Value |
 |---|---:|
@@ -189,7 +198,7 @@ The signal-generator output is therefore accepted as the benchmark input to the 
 
 **Table 2: Ground specifications against which the HPF and LPF will be benchmarked.**
 
-### Discrete Filtering (HPF/LPF) Simulation
+##### Discrete Filtering (HPF/LPF) Simulation
 
 Starting with **HPF** which attenuates DC offset in the received signal, design choices and tradeoffs will be examined to verify that the proposed system specifications were achieved using the following DSP techniques:
 
@@ -245,7 +254,7 @@ The **LPF** is an anti-aliasing filter that attenuates the high interference sig
 
 **Figure 17: Group-Delay Response of the LPF Butterworth IIR Filter.**
 
-#### Benchmark
+##### Benchmark
 
 | DC Attenuation (0 GHz)  | High Interference Attenuation (6.2 GHz)|
 | :---: | :---: |
@@ -285,7 +294,7 @@ The HPF removes the large DC component while having almost no effect on the desi
 
 ---
 
-### Signal Conditioning 
+#### Signal Conditioning 
 
 | Requirement | Proposed Value |
 |---|---:|
@@ -336,7 +345,7 @@ The **Noise Gate** acts as a control mechanism for the **discrete-time, time-var
 
 **Figure 24: Observed SNR and SINR preservation after signal conditioning.**
 
-### Benchmark
+##### Benchmark
 
 The AGC operated across a wide 0.001 to 10 gain range (−60 dB to +20 dB) and was initialized at its minimum gain to safely accommodate the exceptionally large post-LPF input before recovering toward its operating level. The configured 4 ns attack and 22.4 ns release time constants provide asymmetric gain control: rapid gain reduction for large excursions and slower recovery to reduce unnecessary gain pumping in the noisy received waveform. The measured release response was approximately 25.68 ns, well within the specified 250 ns maximum response time.
 
@@ -344,14 +353,14 @@ The noise gate remained open/pass throughout the received record because the det
 
 The noise-gate opening, closing, and settled-suppression requirements remain part of the proposed design specification but were not exercised by this continuously active received record and are therefore not reported as measured results in this benchmark.
 
-## ADC (Sampling and Quantization)
+#### ADC (Sampling and Quantization) and Encoding
 
 
   <table>
   <tr>
     <td valign="top">
       
-### Proposed Sampler System Specifications
+##### Proposed Sampler System Specifications
 
 Here, the 40 GS/s signal is the high-rate simulation reference. The sampler represents the physical ADC operating at 10 GS/s.
 
@@ -377,7 +386,7 @@ Here, the 40 GS/s signal is the high-rate simulation reference. The sampler repr
 </td>
     <td valign="top">
       
-### Proposed Bipolar Midtread Quantizer System Specifications
+##### Proposed Bipolar Midtread Quantizer System Specifications
 
 | Requirement | Proposed Value |
 |---|---:|
@@ -407,7 +416,7 @@ Here, the 40 GS/s signal is the high-rate simulation reference. The sampler repr
 
 **Table 5: Proposed system specifications against which the ADC sampler and quantizer will be benchmarked.**
 
-### Sampling
+##### Sampling
 
 The downsampler reduces the high-rate 40 GS/s simulation reference to the target ADC sampling rate of 10 GS/s using a downsampling factor of 4. The implementation retains one sample from every four input samples while maintaining a continuous global sampling phase across frame boundaries. At this stage, an ideal sampling clock is assumed, therefore aperture jitter is excluded from the model.
 
@@ -419,4 +428,87 @@ The main design objective is to verify that the sampling-rate reduction preserve
 
 **Figure 25: Time-domain ADC sampling operation and frequency-domain verification of desired-signal preservation and alias suppression.**
 
+##### Quantization
 
+The sampled signal was quantized using an 8-bit uniform bipolar midtread quantizer with a 2 Vpp input range from −1 V to +1 V. The resulting 256 unsigned output codes span `0–255`, with code `128` representing exactly 0 V. A quantization step of 7.8125 mV was used, while samples exceeding the nominal full-scale range were clamped to the corresponding endpoint code rather than discarded.
+
+**1. Quantization Error and Digital Code Mapping:** Figure 26 shows the quantizer input together with its reconstructed quantized waveform, the corresponding quantization error, and the generated unsigned ADC codes. The reconstructed waveform closely follows the sampler output while the interior code error remains within the expected ±Δ/2 bound. The measured maximum interior-code error of approximately 3.906 mV satisfies the theoretical half-step limit, while the measured RMS quantization error of approximately 2.278 mV remains close to the ideal value. The digital code response also confirms the expected bipolar midtread mapping, with code 128 corresponding to zero volts.
+
+<img width="100%" alt="Bipolar Midtread Quantizer - Time and Code Response" src="https://github.com/user-attachments/assets/bcac820c-9697-4c87-a08f-132653152c4d" />
+
+**Figure 26: Bipolar Midtread Reconstruction, RMS Quantization Error, and Unsigned Codes.**
+
+**2. ADC Output-Code Distribution:** Figure 27 shows the distribution of the generated 8-bit ADC output codes across the processed signal. The histogram demonstrates broad utilization of the available conversion range without sustained accumulation at either endpoint. Only 3 of 131,072 input samples exceeded the nominal full-scale limits, corresponding to approximately 0.0023% overload and remaining below the specified 0.01% maximum. This confirms that the preceding AGC stage provides sufficient ADC headroom while still allowing effective use of the available quantization range.
+
+<img width="100%" alt="Bipolar Midtread Qunatizer - Code Histogram" src="https://github.com/user-attachments/assets/aa999595-7f21-469f-bfe5-62be3696cb1a" />
+
+**Figure 27: ADC Output Code Distribution.**
+
+**3. Spectral Preservation Through Quantization:** Figure 28 compares the quantizer input and output in both the Hamming-Welch PSD and the resolved Data 1/Data 2 frequency region. The desired data components remain aligned before and after quantization, confirming that the quantizer introduces no measurable frequency displacement of either tone. Their spectral levels are also effectively preserved, indicating negligible distortion of the desired signal components at the selected 8-bit resolution. Toward the upper end of the ADC Nyquist band, the quantized output PSD rises above the quantizer input PSD. This occurs because the filtered input noise floor continues to decrease with frequency while the approximately broadband quantization noise introduced by the ADC establishes its own output noise floor. The separation therefore represents the expected quantization noise contribution rather than a shift or distortion of the desired data tones.
+
+<img width="100%" alt="Bipolar Midtread Quantizer - Spectral Preservation" src="https://github.com/user-attachments/assets/849a045c-5793-4890-b628-8a7166b54651" />
+
+**Figure 28. Quantizer Spectral Preservation.**
+
+**4. Intermodulation Distortion:** The two desired data tones were also evaluated for second- and third-order intermodulation products before and after quantization. The worst measured IM2 component changed from −28.850 dBc to −28.917 dBc, corresponding to a −0.067 dB change, while the worst IM3 component changed from −17.553 dBc to −17.568 dBc, corresponding to a −0.015 dB change. The negligible before-to-after variation confirms that the 8-bit quantization stage does not materially increase the intermodulation products already present at its input.
+
+<img width="100%" alt="image" src="https://github.com/user-attachments/assets/ba8557a0-9041-40b9-a862-1ca8c1141191" />
+
+**Figure 29: Recorded Intermodulation Distortion After ADC Quantization.**
+
+### Encoding
+Converts the ADC output codes into a signed two’s-complement representation for the downstream fixed-point DSP chain. The conversion is lossless, with the decoded two’s-complement signal reproducing the quantized voltage without introducing additional distortion. Therefore, this produces the fixed point represented input the polyphase decimation filter will be performing filtering on.
+
+<img width="80%" alt="ADC Encoder" src="https://github.com/user-attachments/assets/25b91f33-6ae5-40f0-b7f3-3c96872808bc" />
+
+**Figure 30: Offset Binary, Two's Complement, and Signal Reconstruction of the Digital Signal.**
+
+### Benchmark
+
+| ADC Sampler | ADC Quantizer| ADC Encoder|
+| :---: | :---: | :---: |
+|<img width="100%" alt="image" src="https://github.com/user-attachments/assets/8709a0f1-d7b2-4df1-94c0-0d08a66277bb" />|<img width="100%" alt="image" src="https://github.com/user-attachments/assets/bd59aa39-5a87-4ae3-917e-b9310107e348" />| <img width="100%" alt="image" src="https://github.com/user-attachments/assets/702ef76b-e0e8-4af0-83e9-2a853168ce6f" />|
+
+**Figure 31: ADC Sampler, Quantizer, and Encoder Recorded Performance Summary.**
+
+| ADC Sampler SNR/SINR | ADC Quantizer SNR/SINR | ADC Encoder SNR/SINR|
+| :---: | :---: | :---: |
+|<img width="130%" alt="image" src="https://github.com/user-attachments/assets/6686d0f8-3ac5-45fb-a0cf-7cf2206c7f8b" />|<img width="130%" alt="image" src="https://github.com/user-attachments/assets/08f22da2-bb2a-4fac-9318-a607856f7982" />|<img width="130%" alt="image" src="https://github.com/user-attachments/assets/c19a8522-ee89-4b01-ac81-079ff27f3151" />|
+
+**Figure 32: SNR and SINR Report Summary of ADC Sampler, Quantizer, and Encoder.** 
+
+The ADC chain met the proposed sampling, quantization, and encoding requirements. The sampler reduced the 40 GS/s simulation reference to 10 GS/s with continuous frame-to-frame sampling and negligible SNR/SINR change of approximately −0.000004 dB. The 8-bit bipolar midtread quantizer achieved 40.14 dB SQNR, 2.278 mV RMS error, 3.906 mV maximum interior code error, and only 0.0023% overload, while introducing negligible SNR/SINR and intermodulation change.
+
+The encoder then converted the quantized output to signed 8-bit two’s-complement with no added or dropped samples and exactly 0 dB SNR/SINR change, confirming lossless handoff into the downstream fixed-point polyphase decimator.
+
+#### FIR Polyphase Decimation Filter
+
+### Proposed Polyphase Decimator System Specifications
+
+| Requirement | Proposed Value |
+|---|---:|
+| Input format | Signed `int8`, two's-complement, Q8.0 |
+| Voltage scaling | 7.8125 mV/code |
+| Input sample rate | 10 GS/s |
+| Decimation factor | 4 |
+| Target output rate | 2.5 GS/s |
+| Output Nyquist frequency | 1.25 GHz |
+| Input/output frame size | 2,048 → 512 samples |
+| Input/output record size | 131,072 → 32,768 samples |
+| Desired tones | 1.000 GHz and 1.001 GHz |
+| Passband edge | 1.10 GHz |
+| Stopband edge | 1.25 GHz |
+| Maximum passband ripple | ≤ 0.10 dB |
+| Minimum stopband attenuation | ≥ 60 dB |
+| Maximum desired-tone loss | ≤ 0.10 dB per tone |
+| Frequency error | ≤ 1 true-record FFT bin, approximately 76.3 kHz |
+| Alias-band protection | ≥ 60 dB from 1.25–5 GHz |
+| Critical alias case | Suppress 3.8 GHz before it folds to 1.2 GHz |
+| Filter phase | Type-I linear phase |
+| Maximum group delay | ≤ 15 ns |
+| Accumulator headroom | ≥ 1 additional integer bit |
+| Accumulator overflow | Zero events |
+| Fixed-vs-floating error SNR | ≥ 60 dB |
+| Polyphase MAC reduction | ≥ 70% versus direct FIR filtering |
+| Full-band SNR improvement target | ≥ 5.5 dB |
+| Full-band SINR improvement target | ≥ 5.5 dB |
