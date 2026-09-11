@@ -2,6 +2,16 @@
 
 **Status: Under Active Development**
 
+---
+
+## Author
+
+**Damilola Awotunde**
+
+MEng, Communications & Signal Processing - Western University | [LinkedIn](https://www.linkedin.com/in/damilola-awotunde) 
+
+---
+
 ## Overview
 
 While the broader goal is processing a high-speed analog signal, this project simulates the environment in MATLAB; therefore, DSP techniques will be applied to its discrete signal to produce a target-rate digital signal output. To implement this, the system architecture will follow the pipeline shown in Figure 1. Additionally, for each module in the architecture, strict system specification criteria will be followed. Design and trade-off choices will be examined using numerical and spectral analyzers, and the results will be benchmarked.
@@ -13,7 +23,7 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 **2. Butterworth High Pass Filter (HPF):**  Attenuates DC offset in the received signal.
 
-**3. Butterworth Low Pass Filter (LPF):**  Attenuates the high interference signal and guards against aliasing of the received signal.
+**3. Butterworth Low-Pass Filter (LPF):**  Attenuates the high interference signal and guards against aliasing of the received signal.
 
 **4. Automatic Gain Control (AGC) and Noise Gate:** Performs signal conditioning on the filtered signal to protect against the clipping and saturation at the Analog-to-Digital-Converter (ADC). 
 
@@ -21,29 +31,132 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 **6. Polyphase FIR Decimation Filter:** Processes the digital signal to achieve the intended target-rate digital output.
 
-<img width="1000" height="700" alt="image" src="https://github.com/user-attachments/assets/42c814f7-81ac-411c-afec-6ec54ebcbcb7" />
+<img width="80%" alt="ADC" src="https://github.com/user-attachments/assets/866d8da2-f53d-424e-83cc-490e99068ba9" />
 
 **Figure 1: Complete signal processing pipeline from discrete simulation to decimated digital signal output.**
 
 #### Benchmark
 
-1. All implemented stages met their defined functional and performance requirements through stage-by-stage numerical and spectral verification.
+<img width="80%" alt="End - to -End Hamming - FFT" src="https://github.com/user-attachments/assets/447cbe87-8819-46e5-9b67-6e506c0ba8b9" />
+
+**End-to-End System Spectral Benchmark: Signal-Generator Input versus Final Fixed-Point Decimator Output.**
+
+1. All implemented stages were verified through stage-by-stage numerical and spectral analysis, with all functional requirements and the majority of performance requirements achieved.
 2. The signal generator successfully produced the required stationary and non-stationary low-SNR received signals.
 3. The non-stationary Gaussian-pulsed tones produced apparent IM2/IM3 spectral artifacts, caused by time-domain pulse multiplication and the resulting frequency-domain spectral broadening.
 4. The HPF and LPF attenuated the measured IM2-associated spectral components, while the downstream AGC, Sampler, Quantizer, and Encoder introduced no material additional IM3 distortion.
 5. The low SNR and closely spaced desired tones demonstrated the difficulty of achieving reliable frequency-component resolvability.
 6. The mixed-signal chain successfully produced a signed fixed-point digital representation for downstream polyphase FIR decimation.
-
+7. The fixed-point FIR polyphase decimator successfully reduced the ADC output rate from 10 GS/s to the target 2.5 GS/s while preserving the closely spaced 1.000 GHz and 1.001 GHz desired tones.
+8.  Low-pass linear-phase filtering was successfully implemented using the fixed-point FIR polyphase decimator.
+9. Polyphase decomposition into four branches achieved a 74.897% reduction in MAC operations compared with direct full-rate FIR filtering, demonstrating the computational advantage of the multirate architecture.
+10. Across the complete signal chain, the received signal improved from approximately −26 dB SNR at the signal generator stage to approximately −12 dB at the final decimator output, an overall improvement of approximately 14 dB while maintaining the spectral identity of the desired signals.
+    
 ---
 ### How To Run
+
+This system-integration repository depends on the following two repositories:
+
+- [Automatic-Gain-Control-Analog-to-Digital-Converter](https://github.com/DamiProject/Automatic-Gain-Control-Analog-to-Digital-Converter)
+- [DSP-Processor-Polyphase-Decimation-Filter](https://github.com/DamiProject/DSP-Processor-Polyphase-Decimation-Filter)
+
+#### Requirements
+
+- MATLAB
+- Signal Processing Toolbox
+
+#### 1. Clone the Repositories
+
+Create a common parent directory and clone all three repositories into it using the directory names expected by `SetupPaths.m`.
+
+```bash
+mkdir "DSP Downstream"
+cd "DSP Downstream"
+
+git clone https://github.com/DamiProject/Automatic-Gain-Control-Analog-to-Digital-Converter.git "ADC Signal Chain"
+
+git clone https://github.com/DamiProject/DSP-Processor-Polyphase-Decimation-Filter.git "Polyphase Decimator DSP"
+
+git clone https://github.com/DamiProject/System-Integration-ADC-Polyphase-Decimation-Filter.git "ADC Polyphase System Integration"
+```
+
+The resulting directory structure should be:
+
+```text
+DSP Downstream/
+├── ADC Signal Chain/
+├── Polyphase Decimator DSP/
+└── ADC Polyphase System Integration/
+```
+
+`SetupPaths.m` automatically locates the ADC and polyphase decimator design dependencies from this structure and adds the required design and analysis directories to the MATLAB path.
+
+#### 2. Run the End-to-End Demonstration
+
+Open MATLAB and navigate to:
+
+```text
+DSP Downstream/ADC Polyphase System Integration
+```
+
+Run:
+
+```matlab
+RunDemoMain
+```
+
+The demonstration executes the complete signal-processing chain in physical processing order:
+
+```text
+Signal Generator
+      ↓
+High-Pass Filter
+      ↓
+Low-Pass Filter
+      ↓
+Automatic Gain Control / Noise Gate
+      ↓
+ADC Sampler
+      ↓
+Bipolar Midtread Quantizer
+      ↓
+ADC Encoder
+      ↓
+Fixed-Point Polyphase FIR Decimator
+```
+
+Plot visibility for each stage can be controlled from the `ShowPlots` structure near the beginning of `RunDemoMain.m`:
+
+```matlab
+ShowPlots.SignalGenerator = false;
+ShowPlots.HPF = false;
+ShowPlots.LPF = false;
+ShowPlots.AGC = false;
+ShowPlots.Sampler = false;
+ShowPlots.Quantizer = false;
+ShowPlots.ADCEncoder = false;
+ShowPlots.Decimator = true;
+```
+Set the corresponding value to `true` to display the plots for a particular processing stage.
+
+#### 3. Run the System Tests
+
+To execute the system-integration test suite, run:
+
+```matlab
+RunSystemTests
+```
+
+The script initializes the required project paths, runs the tests contained in the `Tests` directory and verifies that the complete test suite passes.
 
 ---
 ### Future Work
 
-- Exploring more non-idealities that affect SNR, ENOB, DSP algorithms and techniques such as coloured noise impact.
+- Exploring more non-idealities that affect SNR, IMD, DSP algorithms and techniques such as coloured noise impact.
 - Exploring software and hardware oriented optimization.
 - Exploring demodulation, equalization, and adaptive filtering techniques.
 
+---
 
 ## Simulation, Results, and Analysis
 
@@ -481,9 +594,9 @@ The ADC chain met the proposed sampling, quantization, and encoding requirements
 
 The encoder then converted the quantized output to signed 8-bit two’s-complement with no added or dropped samples and exactly 0 dB SNR/SINR change, confirming lossless handoff into the downstream fixed-point polyphase decimator.
 
-#### FIR Polyphase Decimation Filter
+### FIR Polyphase Decimation Filter
 
-### Proposed Polyphase Decimator System Specifications
+#### Proposed Polyphase Decimator System Specifications
 
 | Requirement | Proposed Value |
 |---|---:|
@@ -512,3 +625,43 @@ The encoder then converted the quantized output to signed 8-bit two’s-compleme
 | Polyphase MAC reduction | ≥ 70% versus direct FIR filtering |
 | Full-band SNR improvement target | ≥ 5.5 dB |
 | Full-band SINR improvement target | ≥ 5.5 dB |
+
+**Table 6: Proposed system specifications against which the Type-I FIR polyphase decimator will be benchmarked.**
+
+#### Polyphase Decimator Characterization
+
+The final DSP stage reduces the signed `int8` two's-complement ADC output from **10 GS/s to 2.5 GS/s** using a factor-of-four fixed-point polyphase FIR decimator, thereby producing the target-rate digital signal output. The fixed-point implementation uses **Q1.15 coefficients, Q9.15 products, and a Q11.15 accumulator**, with one additional headroom bit, nearest rounding, and saturation protection.
+
+**1. FIR Response and Linear-Phase Delay:** The floating and fixed-point FIR responses closely overlap while satisfying the required passband ripple, stopband attenuation, and alias-protection limits. The 243-tap Type-I FIR produces a constant **121-sample group delay, equivalent to 12.1 ns**, remaining below the proposed 15 ns maximum and confirming linear-phase operation.
+
+<img width="80%" alt="Decimator - FIR Response and Group Delay" src="https://github.com/user-attachments/assets/beedb831-f16b-40fc-9cea-a95cf4673bfa" />
+
+**Figure 33: Low-Pass Type I FIR Response and Linear Phase Group Delay.**
+
+**2. Polyphase Architecture:** The original 243-tap FIR is decomposed into four branches of `[61 61 61 60]` coefficients as shown in Figure 34. By computing only the samples required after factor-of-four decimation, the implemented architecture achieves a **74.897% MAC reduction compared with direct full-rate FIR filtering**.
+
+<img width="80%" alt="Decimator - Polyphase Branch Coefficients" src="https://github.com/user-attachments/assets/0a8838c7-06aa-4390-b174-f0cea7a5e152" />
+
+**Figure 34: Four-Branch Polyphase Decomposition.**
+
+**3. Fixed-Point Numerical Accuracy:** The bounded fixed-point output closely tracks the floating-point reference, achieving a **76.94 dB fixed-vs-floating error SNR**, exceeding the proposed 60 dB minimum. No accumulator overflow events were observed and the bounded fixed-point output matched the full-precision integer reference.
+
+<img width="80%" alt="Decimator - Fixed and Floating Output" src="https://github.com/user-attachments/assets/ec64a074-01dd-484e-8596-51e3e702ee39" />
+
+**Figure 35: Target-Rate Received Waveform and Bounded Fixed-Point Error.**
+
+**4. Received-Signal Preservation and Noise Reduction:** Hamming-FFT analysis confirms preservation of the **1.000 GHz and 1.001 GHz** desired tones after decimation while the anti-alias FIR suppresses spectral content outside the target-rate Nyquist region. Full-band SNR and SINR improved from approximately **-14.53 dB to -12.24 dB**, corresponding to an improvement of approximately **+2.30 dB**.
+
+<img width="80%" alt="Decimator - Received Signal Performance" src="https://github.com/user-attachments/assets/b87bef04-e3ae-4fce-8642-2494fb9cba04" />
+
+**Figure 36: Received Signal Spectral Preservation.**
+
+#### Benchmark
+
+<img width="80%" alt="image" src="https://github.com/user-attachments/assets/121a1579-42eb-40bf-acf2-ecef317f19f6" />
+
+**Figure 37: Low-Pass Type-I FIR Polyphase Decimation Filter Performance Summary.**
+
+The polyphase decimator satisfied the proposed requirements for **passband ripple, stopband attenuation, alias protection, desired-tone preservation, fixed-point accuracy, group delay, accumulator overflow, and computational reduction**. However, the measured **+2.30 dB SNR/SINR improvement** did not meet the proposed **+5.5 dB target**.
+
+Further analysis showed that approximately 88.6% of the measured residual broadband-noise power lies below 1.05 GHz, limiting the amount of additional noise that can be removed through stopband or transition-band tuning alone. Future work will investigate additional filter and system-level trade-offs to determine whether the 5.5 dB target can be achieved or represents a practical limitation under the current received noise conditions.
