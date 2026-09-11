@@ -7,7 +7,7 @@ classdef TestFixedDecimatorSmoke < matlab.unittest.TestCase
         function testCompleteSignalGeneratorToFixedDecimatorFrameChain(testCase)
             %% Full smoke test through the encoded fixed-point DSP backend
 
-            Config = EndToEndConfig();
+            Config = EndToEndTestConfig();
             ADCParams = Config.ADCParams;
             DSPParams = Config.DSPParams;
 
