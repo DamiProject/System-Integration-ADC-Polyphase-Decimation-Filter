@@ -42,13 +42,13 @@ While the broader goal is processing a high-speed analog signal, this project si
 **End-to-End System Spectral Benchmark: Signal-Generator Input versus Final Fixed-Point Decimator Output.**
 
 1. All implemented stages were verified through stage-by-stage numerical and spectral analysis, with all functional requirements and the majority of performance requirements achieved.
-2. The signal generator successfully produced the required stationary and non-stationary low-SNR received signals.
+2. The signal generator successfully produced the required stationary and non-stationary low-SNR received signals at a sample rate of 40 GS/s.
 3. The non-stationary Gaussian-pulsed tones produced apparent IM2/IM3 spectral artifacts, caused by time-domain pulse multiplication and the resulting frequency-domain spectral broadening.
 4. The HPF and LPF attenuated the measured IM2-associated spectral components, while the downstream AGC, Sampler, Quantizer, and Encoder introduced no material additional IM3 distortion.
 5. The low SNR and closely spaced desired tones demonstrated the difficulty of achieving reliable frequency-component resolvability.
 6. The mixed-signal chain successfully produced a signed fixed-point digital representation for downstream polyphase FIR decimation.
 7. The fixed-point FIR polyphase decimator successfully reduced the ADC output rate from 10 GS/s to the target 2.5 GS/s while preserving the closely spaced 1.000 GHz and 1.001 GHz desired tones.
-8.  Low-pass linear-phase filtering was successfully implemented using the fixed-point FIR polyphase decimator.
+8. Low-pass linear-phase filtering was successfully implemented using the FIR polyphase decimator.
 9. Polyphase decomposition into four branches achieved a 74.897% reduction in MAC operations compared with direct full-rate FIR filtering, demonstrating the computational advantage of the multirate architecture.
 10. Across the complete signal chain, the received signal improved from approximately −26 dB SNR at the signal generator stage to approximately −12 dB at the final decimator output, an overall improvement of approximately 14 dB while maintaining the spectral identity of the desired signals.
     
@@ -57,8 +57,8 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 This system-integration repository depends on the following two repositories:
 
-- [Automatic-Gain-Control-Analog-to-Digital-Converter](https://github.com/DamiProject/Automatic-Gain-Control-Analog-to-Digital-Converter)
-- [DSP-Processor-Polyphase-Decimation-Filter](https://github.com/DamiProject/DSP-Processor-Polyphase-Decimation-Filter)
+- [DSP-Signal-Conditioning-ADC-Encoder](https://github.com/DamiProject/DSP-Signal-Conditioning-ADC-Encoder): This repository contains the signal generator, Butterworth HPF and LPF, AGC and Noise Gate, ADC and Encoder.
+- [DSP-Processor-Polyphase-Decimation-Filter](https://github.com/DamiProject/DSP-Processor-Polyphase-Decimation-Filter): This repository contains both the floating-point and fixed-point version of Type-I Low-Pass FIR Polyphase Decimation Filter.
 
 #### Requirements
 
