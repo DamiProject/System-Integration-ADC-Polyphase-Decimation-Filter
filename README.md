@@ -57,7 +57,7 @@ While the broader goal is processing a high-speed analog signal, this project si
 
 This system-integration repository depends on the following two repositories:
 
-- [DSP-Signal-Conditioning-ADC-Encoder](https://github.com/DamiProject/DSP-Signal-Conditioning-ADC-Encoder): This repository contains the signal generator, Butterworth HPF and LPF, AGC and Noise Gate, ADC and Encoder.
+- [DSP-Signal-Conditioning-ADC-Encoder](https://github.com/DamiProject/DSP-Signal-Conditioning-ADC-Encoder): This repository contains the signal generator, Butterworth HPF and LPF, FeedForward AGC and Noise Gate, ADC and Encoder.
 - [DSP-Processor-Polyphase-Decimation-Filter](https://github.com/DamiProject/DSP-Processor-Polyphase-Decimation-Filter): This repository contains both the floating-point and fixed-point version of Type-I Low-Pass FIR Polyphase Decimation Filter.
 
 #### Requirements
