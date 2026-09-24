@@ -1,0 +1,89 @@
+name: MATLAB DSP CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: DSP Verification
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ============================================================
+      # CHECKOUT SYSTEM INTEGRATION REPOSITORY
+      # ============================================================
+
+      - name: Checkout System Integration Repository
+        uses: actions/checkout@v6
+
+
+      # ============================================================
+      # CHECKOUT ADC DEPENDENCY
+      # ============================================================
+
+      - name: Checkout ADC Signal Chain
+        uses: actions/checkout@v6
+        with:
+          repository: DamiProject/DSP-Signal-Conditioning-ADC-Encoder
+          path: dependencies/adc
+
+
+      # ============================================================
+      # CHECKOUT POLYPHASE DEPENDENCY
+      # ============================================================
+
+      - name: Checkout Polyphase Decimator
+        uses: actions/checkout@v6
+        with:
+          repository: DamiProject/DSP-Processor-Polyphase-Decimation-Filter
+          path: dependencies/polyphase
+
+
+      # ============================================================
+      # MATLAB ENVIRONMENT
+      # ============================================================
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v3
+        with:
+          products: Signal_Processing_Toolbox
+          cache: true
+
+
+      # ============================================================
+      # ADC VERIFICATION
+      # ============================================================
+
+      - name: Run ADC Tests
+        uses: matlab-actions/run-command@v3
+        with:
+          command: cd('dependencies/adc'); ADCRunTests
+
+
+      # ============================================================
+      # POLYPHASE VERIFICATION
+      # ============================================================
+
+      - name: Run Polyphase Tests
+        uses: matlab-actions/run-command@v3
+        with:
+          command: cd('dependencies/polyphase'); DSPRunTests
+
+
+      # ============================================================
+      # SYSTEM INTEGRATION VERIFICATION
+      # ============================================================
+
+      - name: Run System Integration Tests
+        uses: matlab-actions/run-command@v3
+        with:
+          command: RunSystemTests
