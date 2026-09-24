@@ -31,14 +31,68 @@ if ~isfolder(TestRoot)
         'The system Tests folder could not be located.');
 end
 
-Results = runtests( ...
+%% ==========================================
+%% CREATE TEST SUITE
+%% ==========================================
+
+TestSuite = testsuite( ...
     TestRoot, ...
     "IncludeSubfolders", true);
 
-disp(Results);
+%% ==========================================
+%% CONFIGURE TEST RUNNER
+%% ==========================================
+
+Runner = matlab.unittest.TestRunner.withDefaultPlugins;
+
+%% ==========================================
+%% CI TEST REPORTING
+%% ==========================================
+
+if strcmpi(getenv("GITHUB_ACTIONS"), "true")
+
+    ReportRoot = fullfile( ...
+        projectRoot, ...
+        "test-results");
+
+    if ~isfolder(ReportRoot)
+        mkdir(ReportRoot);
+    end
+
+    %% JUnit XML report
+    import matlab.unittest.plugins.XMLPlugin
+
+    XMLReport = fullfile( ...
+        ReportRoot, ...
+        "system-test-results.xml");
+
+    Runner.addPlugin( ...
+        XMLPlugin.producingJUnitFormat(XMLReport));
+
+    %% HTML report
+    import matlab.unittest.plugins.TestReportPlugin
+
+    HTMLReport = fullfile( ...
+        ReportRoot, ...
+        "system-test-report.html");
+
+    Runner.addPlugin( ...
+        TestReportPlugin.producingHTML( ...
+            HTMLReport, ...
+            "Title", ...
+            "ADC-Polyphase System Verification Report"));
+end
+
+%% ==========================================
+%% RUN TESTS
+%% ==========================================
+
+results = Runner.run(TestSuite);
+
+disp(results);
 
 %% ==========================================
 %% VERIFY TEST RESULTS
 %% ==========================================
 
-assertSuccess(Results);
+assertSuccess(results);
