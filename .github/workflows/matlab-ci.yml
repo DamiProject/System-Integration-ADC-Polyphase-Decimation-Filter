@@ -87,3 +87,19 @@ jobs:
         uses: matlab-actions/run-command@v3
         with:
           command: RunSystemTests
+
+      # ============================================================
+      # TEST EVIDENCE
+      # ============================================================
+
+      - name: Upload MATLAB Test Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: matlab-dsp-test-reports
+          path: |
+            dependencies/adc/test-results/
+            dependencies/polyphase/test-results/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 30
