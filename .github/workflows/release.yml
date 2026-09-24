@@ -1,0 +1,90 @@
+name: DSP System Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  verify_release:
+    name: Verify Release
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ============================================================
+      # CHECKOUT SYSTEM INTEGRATION REPOSITORY
+      # ============================================================
+
+      - name: Checkout System Integration Repository
+        uses: actions/checkout@v6
+
+
+      # ============================================================
+      # CHECKOUT ADC DEPENDENCY
+      # ============================================================
+
+      - name: Checkout ADC Signal Chain
+        uses: actions/checkout@v6
+        with:
+          repository: DamiProject/DSP-Signal-Conditioning-ADC-Encoder
+          path: dependencies/adc
+
+
+      # ============================================================
+      # CHECKOUT POLYPHASE DEPENDENCY
+      # ============================================================
+
+      - name: Checkout Polyphase Decimator
+        uses: actions/checkout@v6
+        with:
+          repository: DamiProject/DSP-Processor-Polyphase-Decimation-Filter
+          path: dependencies/polyphase
+
+
+      # ============================================================
+      # MATLAB ENVIRONMENT
+      # ============================================================
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v3
+        with:
+          products: Signal_Processing_Toolbox
+          cache: true
+
+
+      # ============================================================
+      # RELEASE VERIFICATION
+      # ============================================================
+
+      - name: Run ADC Tests
+        uses: matlab-actions/run-command@v3
+        with:
+          command: cd('dependencies/adc'); ADCRunTests
+
+      - name: Run Polyphase Tests
+        uses: matlab-actions/run-command@v3
+        with:
+          command: cd('dependencies/polyphase'); DSPRunTests
+
+      - name: Run System Integration Tests
+        uses: matlab-actions/run-command@v3
+        with:
+          command: RunSystemTests
+
+
+      # ============================================================
+      # CREATE GITHUB RELEASE
+      # ============================================================
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --generate-notes \
+            --title "DSP System ${{ github.ref_name }}"
