@@ -1,4 +1,4 @@
-name: MATLAB DSP CI
+name: System Integration Tests
 
 on:
   push:
