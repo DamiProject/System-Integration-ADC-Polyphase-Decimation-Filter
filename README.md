@@ -1,5 +1,7 @@
 # Fixed Point Digital Signal Processing of A High-Speed Received Signal
 
+[![System Integration Tests](https://github.com/DamiProject/System-Integration-ADC-Polyphase-Decimation-Filter/actions/workflows/matlab-ci.yml/badge.svg?branch=main)](https://github.com/DamiProject/System-Integration-ADC-Polyphase-Decimation-Filter/actions/workflows/matlab-ci.yml)
+
 **Status: Under Active Development**
 
 ---
